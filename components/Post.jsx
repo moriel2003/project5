@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useAsyncError, useParams } from 'react-router-dom';
 import classes from '../styles/Todos.module.css';
 
 function Post() {
@@ -90,6 +90,37 @@ function Post() {
       alert(err);
     }
   };
+  const handleBodyChange = (event) => {
+    const newBody = event.target.value;
+    setCurrentPost(prevPost => ({ ...prevPost, body: newBody }));
+  };
+  const handleTitleChange = (event) => {
+    const newTitle = event.target.value;
+    setCurrentPost(prevPost => ({ ...prevPost, title: newTitle}));
+  };
+
+
+
+  const handlePostEdit=async(title,body)=> {
+    try{
+      const res = await fetch(`http://localhost:3000/posts/${currentPost.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ title: title,
+          body:body
+         })
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to update post ');
+      }
+
+    }
+    catch(err)
+    {
+      alert(err);
+    }
+
+  }
 
   return (
     <div className={classes.container}>
@@ -97,8 +128,22 @@ function Post() {
         <h1>Loading...</h1>
       ) : (
         <>
-          <h2 className={classes.todoTitle}>{currentPost.title}</h2>
-          <p>{currentPost.body}</p>
+            <input
+              type="text"
+              className={classes['todo-title']}
+              value={currentPost.title}
+              onChange={(event) => handleTitleChange(event)}
+              onBlur={(event) => handlePostEdit(event.target.value,currentPost.body)}
+              disabled={currentPost.userId!==currentUser.id}
+            />
+          <input
+              type="text"
+              className={classes['todo-title']}
+              value={currentPost.body}
+              onChange={(event) => handleBodyChange(event)}
+              onBlur={(event) => handlePostEdit(currentPost.title,event.target.value)}
+              disabled={currentPost.userId!==currentUser.id}
+            />
           <button onClick={() => setIsComments(!isComments)}>
             {isComments ? 'Hide comments' : 'Show comments'}
           </button>
